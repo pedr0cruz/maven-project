@@ -1,42 +1,48 @@
 pipeline {
-    agent any
-
-    parameters {
-         string(name: 'tomcat_dev', defaultValue: '35.166.210.154', description: 'Staging Server')
-         string(name: 'tomcat_prod', defaultValue: '34.209.233.6', description: 'Production Server')
-    }
-
-    triggers {
-         pollSCM('* * * * *')
-     }
-
-stages{
-        stage('Build'){
-            steps {
-                sh 'mvn clean package'
-            }
-            post {
-                success {
-                    echo 'Now Archiving...'
-                    archiveArtifacts artifacts: '**/target/*.war'
-                }
-            }
+  agent any
+  stages {
+    stage('Build') {
+      post {
+        success {
+          echo 'Now Archiving...'
+          archiveArtifacts '**/target/*.war'
         }
 
-        stage ('Deployments'){
-            parallel{
-                stage ('Deploy to Staging'){
-                    steps {
-                        sh "scp -i /home/jenkins/tomcat-demo.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
-                    }
-                }
-
-                stage ("Deploy to Production"){
-                    steps {
-                        sh "scp -i /home/jenkins/tomcat-demo.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
-                    }
-                }
-            }
-        }
+      }
+      steps {
+        sh 'mvn clean package'
+      }
     }
+
+    stage('UAT') {
+      parallel {
+        stage('UAT') {
+          steps {
+            echo 'Pruebas integrales'
+          }
+        }
+
+        stage('SC') {
+          steps {
+            echo 'Verificacion de codigo'
+          }
+        }
+
+      }
+    }
+
+    stage('PRD') {
+      steps {
+        echo 'Despliegue a produccion'
+      }
+    }
+
+  }
+  parameters {
+    string(name: 'tomcat_dev', defaultValue: '35.166.210.154', description: 'Staging Server')
+    string(name: 'tomcat_prod', defaultValue: '34.209.233.6', description: 'Production Server')
+  }
+  triggers {
+    pollSCM('* * * * *')
+  }
 }
