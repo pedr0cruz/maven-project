@@ -19,7 +19,6 @@ pipeline {
         stage('UAT') {
           steps {
             echo 'Pruebas integrales'
-            sh 'jenkins/test-all.sh'
           }
         }
 
@@ -35,7 +34,6 @@ pipeline {
     stage('PRD') {
       steps {
         echo 'Despliegue a produccion'
-        sh 'jenkins/deploy.sh'
       }
     }
 
