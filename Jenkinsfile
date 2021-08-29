@@ -11,7 +11,6 @@ pipeline {
       }
       steps {
         sh 'mvn clean package'
-        junit 'target/**/*.xml'
       }
     }
 
